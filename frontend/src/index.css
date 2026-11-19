@@ -1,0 +1,3 @@
+/* Minimal global reset. Dashboard styling lives in App.css and the component CSS files. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
