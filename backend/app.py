@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-#from analysis.transactions_analysis import TransactionsAnalysis
+from analysis.transactions_analysis import TransactionsAnalysis
 from analysis.customers_analysis import CustomersAnalysis
 from pathlib import Path
 
@@ -7,13 +7,12 @@ app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 
-#sales_path = DATA_DIR / "transactions.csv"
-#products_path = DATA_DIR / "products.csv"
+sales_path = DATA_DIR / "transactions.csv"
+products_path = DATA_DIR / "products.csv"
 customers_path = DATA_DIR / "customers DSAI 203.csv"
-#transaction_analysis = TransactionsAnalysis(sales_path, products_path)
+transaction_analysis = TransactionsAnalysis(sales_path, products_path)
 customer_analysis = CustomersAnalysis(customers_path)
 
-# --- Endpoints الخاصة بالمعاملات ---
 @app.route("/api/transaction-types")
 def transaction_types():
     return jsonify(transaction_analysis.transaction_type_count())
@@ -42,7 +41,6 @@ def top_selling_categories():
 def top_selling_products():
     return jsonify(transaction_analysis.top_selling_products())
 
-# --- Endpoints الخاصة بالعملاء ---
 @app.route("/api/customers/gender")
 def customers_gender():
     return jsonify(customer_analysis.gender_count())
