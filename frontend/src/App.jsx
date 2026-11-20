@@ -1,5 +1,6 @@
 import { useState } from "react";
 import TransactionAnalysis from "./components/TransactionAnalysis";
+import CustomerAnalysis from "./components/CustomerAnalysis";
 import "./App.css";
 
 
@@ -10,7 +11,7 @@ const ANALYSES = [
     description: "Transaction mix, revenue trends and top performers.",
     Component: TransactionAnalysis,
   },
-  { id: "customers", title: "Customers", description: "Who is buying.", Component: () => <ComingSoon name="Customers" /> },
+  { id: "customers", title: "Customers", description: "Who is buying.", Component: CustomerAnalysis },
   { id: "Stores", title: "Stores", description: "How stores perform.", Component: () => <ComingSoon name="Sales" /> },
 ];
 
