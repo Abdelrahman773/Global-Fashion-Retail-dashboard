@@ -9,7 +9,7 @@ DATA_DIR = BASE_DIR / "data"
 
 sales_path = DATA_DIR / "transactions.csv"
 products_path = DATA_DIR / "products.csv"
-customers_path = DATA_DIR / "customers DSAI 203.csv"
+customers_path = DATA_DIR / "customers.csv"
 transaction_analysis = TransactionsAnalysis(sales_path, products_path)
 customer_analysis = CustomersAnalysis(customers_path)
 
