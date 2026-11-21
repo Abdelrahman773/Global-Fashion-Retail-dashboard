@@ -1,5 +1,5 @@
 import ChartCard from "./ChartCard";
-import { barChart, donutChart, lineChart, PALETTE } from "./chartBuilders";
+import { barChart, donutChart, lineChart, PALETTE } from "../chartBuilders";
 import "./TransactionAnalysis.css";
 
 const buildTypes = (root, rows) => donutChart(root, rows);

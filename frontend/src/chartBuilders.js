@@ -110,9 +110,14 @@ export function donutChart(root, rows) {
   legend.data.setAll(series.dataItems);
 }
 
-export function barChart(root, rows, { horizontal = false, limit, color = PALETTE[0] } = {}) {
+export function barChart(
+  root,
+  rows,
+  { horizontal = false, limit, color = PALETTE[0], sort = true } = {}
+) {
   const { catKey, valKey } = inferKeys(rows);
-  let data = [...rows].sort((a, b) => b[valKey] - a[valKey]);
+  // sort: true orders bars by value (largest first); sort: false keeps the order the API sent.
+  let data = sort ? [...rows].sort((a, b) => b[valKey] - a[valKey]) : [...rows];
   if (limit) data = data.slice(0, limit);
 
   const chart = root.container.children.push(
@@ -215,6 +220,147 @@ export function lineChart(root, rows) {
   series.bullets.push(() =>
     am5.Bullet.new(root, {
       sprite: am5.Circle.new(root, { radius: 4.5, fill: WHITE, stroke: color, strokeWidth: 2.5 }),
+    })
+  );
+
+  series.data.setAll(data);
+  addCursor(root, chart);
+  series.appear(800);
+}
+
+export function privacyGroupedChart(root, rows) {
+  const chart = root.container.children.push(
+    am5xy.XYChart.new(root, { panX: false, panY: false, layout: root.verticalLayout })
+  );
+
+  const xRenderer = am5xy.AxisRendererX.new(root, { minGridDistance: 30, cellStartLocation: 0.15, cellEndLocation: 0.85 });
+  const yRenderer = am5xy.AxisRendererY.new(root, {});
+  styleAxis(xRenderer, { grid: false, category: true });
+  styleAxis(yRenderer);
+
+  const xAxis = chart.xAxes.push(
+    am5xy.CategoryAxis.new(root, { categoryField: "gender", renderer: xRenderer })
+  );
+  const yAxis = chart.yAxes.push(
+    am5xy.ValueAxis.new(root, { renderer: yRenderer, min: 0 })
+  );
+
+  xAxis.data.setAll(rows);
+
+  const metrics = [
+    { field: "validEmails", name: "Valid Emails", color: PALETTE[0] },
+    { field: "fakeEmails", name: "Fake Emails", color: PALETTE[3] },
+    { field: "disclosedJobs", name: "Disclosed Jobs", color: PALETTE[1] },
+    { field: "undisclosedJobs", name: "Undisclosed Jobs", color: PALETTE[4] },
+  ];
+
+  metrics.forEach(({ field, name, color }) => {
+    const series = chart.series.push(
+      am5xy.ColumnSeries.new(root, {
+        name,
+        xAxis,
+        yAxis,
+        valueYField: field,
+        categoryXField: "gender",
+        fill: am5.color(color),
+        stroke: am5.color(color),
+        tooltip: am5.Tooltip.new(root, {
+          labelText: "{name} ({categoryX}): {valueY.formatNumber('#,###')}",
+        }),
+      })
+    );
+    series.columns.template.setAll({
+      cornerRadiusTL: 6,
+      cornerRadiusTR: 6,
+      strokeOpacity: 0,
+      fillGradient: gradient(root, color, 90, true),
+    });
+    series.data.setAll(rows);
+  });
+
+  const legend = chart.children.push(
+    am5.Legend.new(root, { centerX: am5.percent(50), x: am5.percent(50), marginTop: 12 })
+  );
+  legend.labels.template.setAll({ fill: INK, fontSize: 12 });
+  legend.markers.template.setAll({ width: 10, height: 10 });
+  legend.markerRectangles.template.setAll({ cornerRadiusTL: 5, cornerRadiusTR: 5, cornerRadiusBL: 5, cornerRadiusBR: 5 });
+  legend.data.setAll(chart.series.values);
+
+  addCursor(root, chart);
+}
+
+/**
+ * Scatter plot of store locations: x = longitude, y = latitude, one dot per store.
+ * Expects rows like { store_id, store, city, country, latitude, longitude }.
+ */
+export function storeCoordinatesChart(root, rows) {
+  const data = rows
+    .map((r) => ({
+      lat: Number(r.latitude),
+      lng: Number(r.longitude),
+      store: r.store,
+      city: r.city,
+      country: r.country,
+    }))
+    .filter((d) => Number.isFinite(d.lat) && Number.isFinite(d.lng));
+
+  const chart = root.container.children.push(
+    am5xy.XYChart.new(root, {
+      panX: true,
+      panY: true,
+      wheelX: "zoomX",
+      wheelY: "zoomY",
+      pinchZoomX: true,
+      pinchZoomY: true,
+      layout: root.verticalLayout,
+    })
+  );
+
+  const xRenderer = am5xy.AxisRendererX.new(root, { minGridDistance: 60 });
+  const yRenderer = am5xy.AxisRendererY.new(root, { minGridDistance: 40 });
+  styleAxis(xRenderer);
+  styleAxis(yRenderer);
+
+  const xAxis = chart.xAxes.push(
+    am5xy.ValueAxis.new(root, { renderer: xRenderer, extraMin: 0.05, extraMax: 0.05 })
+  );
+  const yAxis = chart.yAxes.push(
+    am5xy.ValueAxis.new(root, { renderer: yRenderer, extraMin: 0.05, extraMax: 0.05 })
+  );
+
+  xAxis.children.push(
+    am5.Label.new(root, { text: "Longitude", x: am5.p50, centerX: am5.p50, fill: TEXT, fontSize: 12 })
+  );
+  yAxis.children.unshift(
+    am5.Label.new(root, { text: "Latitude", rotation: -90, y: am5.p50, centerX: am5.p50, fill: TEXT, fontSize: 12 })
+  );
+
+  const color = am5.color(PALETTE[0]);
+  const series = chart.series.push(
+    am5xy.LineSeries.new(root, {
+      xAxis,
+      yAxis,
+      valueXField: "lng",
+      valueYField: "lat",
+      stroke: color,
+      fill: color,
+    })
+  );
+  // Dots only, no connecting line
+  series.strokes.template.set("visible", false);
+
+  series.bullets.push(() =>
+    am5.Bullet.new(root, {
+      sprite: am5.Circle.new(root, {
+        radius: 5,
+        fill: color,
+        fillOpacity: 0.75,
+        stroke: WHITE,
+        strokeWidth: 1.5,
+        tooltip: am5.Tooltip.new(root, {}),
+        tooltipText:
+          "{store}\n{city}, {country}\nLat: {valueY.formatNumber('0.0000')}  Lng: {valueX.formatNumber('0.0000')}",
+      }),
     })
   );
 

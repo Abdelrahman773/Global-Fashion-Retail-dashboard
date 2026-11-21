@@ -1,8 +1,8 @@
 import { useState } from "react";
 import TransactionAnalysis from "./components/TransactionAnalysis";
 import CustomerAnalysis from "./components/CustomerAnalysis";
+import StoreAnalysis from "./components/StoresAnalysis";
 import "./App.css";
-
 
 const ANALYSES = [
   {
@@ -11,11 +11,19 @@ const ANALYSES = [
     description: "Transaction mix, revenue trends and top performers.",
     Component: TransactionAnalysis,
   },
-  { id: "customers", title: "Customers", description: "Who is buying.", Component: CustomerAnalysis },
-  { id: "Stores", title: "Stores", description: "How stores perform.", Component: () => <ComingSoon name="Sales" /> },
+  {
+    id: "customers",
+    title: "Customers",
+    description: "Who is buying.",
+    Component: CustomerAnalysis,
+  },
+  {
+    id: "stores",
+    title: "Stores",
+    description: "How stores perform.",
+    Component: StoreAnalysis,
+  },
 ];
-
-
 
 export default function App() {
   const [activeId, setActiveId] = useState(ANALYSES[0].id);
@@ -26,6 +34,7 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar__brand">Fashion Retail</div>
+
         <nav className="sidebar__nav" aria-label="Analyses">
           {ANALYSES.map(({ id, title }) => (
             <button

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ChartCard from "./ChartCard";
 import AmChart from "./AmChart";
-import { barChart, donutChart, privacyGroupedChart, PALETTE } from "./chartBuilders";
+import { barChart, donutChart, privacyGroupedChart, PALETTE } from "../chartBuilders";
 import "./TransactionAnalysis.css";
 
 const BASE_URL = import.meta.env?.VITE_API_URL ?? "";
